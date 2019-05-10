@@ -5,9 +5,10 @@ node {
     checkout([$class: 'GitSCM', branches: [[name: '10.x']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: "https://github.com/wildfly/quickstart.git"]]]) 
   
   stage 'Commit Stage'
-    sh " cd kitchensink-angularjs/ && /var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
-    
-       
+    dir("kitchensink-angularjs/") {
+      sh "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
+    }
+          
   stage 'Deploy Stage'
     def warFiles = findFiles glob: 'kitchensink-angularjs/target/*.war'
     for (int i=0; i<warFiles.size(); i++) {
@@ -22,16 +23,19 @@ def deploy(deploymentFileName) {
     def deploymentNameWoPath = determineFileName(deploymentFileName)
     
     // undeploy old war if present
-    sh "curl -S -H \"content-Type: application/json\" -d '{\"operation\":\"undeploy\", \"address\":[{\"deployment\":\"${deploymentNameWoPath}\"}]}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management"
-    sh "curl -S -H \"content-Type: application/json\" -d '{\"operation\":\"remove\", \"address\":[{\"deployment\":\"${deploymentNameWoPath}\"}]}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management"
+    sh """curl -S -H "content-Type: application/json" -d '{"operation":"undeploy", "address":[{"deployment":"${deploymentNameWoPath}"}]}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management"""
+
+    sh """curl -S -H "content-Type: application/json" -d '{"operation":"remove", "address":[{"deployment":"${deploymentNameWoPath}"}]}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management"""
     // step 1: upload archive
-    sh "curl -F \"file=@${deploymentFileName}\" --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management/add-content > result.txt"
+    sh """curl -F "file=@${deploymentFileName}" --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management/add-content > result.txt"""
     // step 2: deploy the archive
     // read result from step 1
     def uploadResult = readFile 'result.txt'
     def bytesValue = extractByteValue(uploadResult)
     if (bytesValue != null) {
-      sh "curl -S -H \"Content-Type: application/json\" -d '{\"content\":[{\"hash\": {\"BYTES_VALUE\" : \"${bytesValue}\"}}], \"address\": [{\"deployment\":\"${deploymentNameWoPath}\"}], \"operation\":\"add\", \"enabled\":\"true\"}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management > result2.txt"
+
+      sh """curl -S -H "Content-Type: application/json" -d '{"content":[{"hash": {"BYTES_VALUE" : "${bytesValue}"}}], "address": [{"deployment":"${deploymentNameWoPath}"}], "operation":"add", "enabled":"true"}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management > result2.txt"""
+      
     } else {
       // fail build as deployment was not successfull
       error "Upload of ${deploymentFileName} failed"
