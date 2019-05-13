@@ -1,24 +1,26 @@
 import groovy.json.JsonSlurper
 
-def gitUrl = "https://github.com/wildfly/quickstart.git"
-def hostname = 'localhost'
-def managementPort = '9990'
+String gitUrl = "https://github.com/wildfly/quickstart.git"
+String hostname = 'localhost'
+String managementPort = '9990'
 
-def buildOutput = "kitchensink-angularjs/target"
+String deployBranch = '10.x'
 
-def appDir = "kitchensink-angularjs/"
+String buildOutput = "kitchensink-angularjs/target"
+
+String appDir = "kitchensink-angularjs/"
 
 node {
   stage 'Checkout Stage'
-    checkout([$class: 'GitSCM', branches: [[name: '10.x']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: "${gitUrl}"]]]) 
+    checkout([$class: 'GitSCM', branches: [[name: "$deployBranch" ]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: "$gitUrl"]]]) 
   
   stage 'Commit Stage'
-    dir("${appDir}") {
+    dir("$appDir") {
       sh "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
     }
           
   stage 'Deploy Stage'
-    def warFiles = findFiles glob: "${buildOutput}/*.war"
+    def warFiles = findFiles glob: "$buildOutput/*.war"
     for (int i=0; i<warFiles.size(); i++) {
     deploy(warFiles[i].path)
     }
