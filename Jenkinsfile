@@ -20,9 +20,9 @@ node {
           
   stage 'Deploy Stage'
     def warFiles = findFiles glob: "$buildOutput/*.war"
-    for (int i=0; i<warFiles.size(); i++) {
+    //for (int i=0; i<warFiles.size(); i++) {
     deploy(warFiles[i].path,"$hostname")
-    }
+    //}
 }
 
 def deploy(deploymentFileName,hostname) {
