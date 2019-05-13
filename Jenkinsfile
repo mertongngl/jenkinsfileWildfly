@@ -17,7 +17,7 @@ node {
     dir("$appDir") {
       sh "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
     }
-  for(int j=0; j<hostnames.count();j++) {
+  for(int j=0; j<hostnames.size();j++) {
       stage 'Deploy Stage $hostnames[j]'
         def warFiles = findFiles glob: "$buildOutput/*.war"
         for (int i=0; i<warFiles.size(); i++) {
