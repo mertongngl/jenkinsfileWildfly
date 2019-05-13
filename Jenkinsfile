@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 
 String gitUrl = "https://github.com/wildfly/quickstart.git"
 
-String[] hostnames = ["localhost"]
+String[] hostnames = ["localhost","localhost2"]
 
 String deployBranch = '10.x'
 
