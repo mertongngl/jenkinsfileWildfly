@@ -1,6 +1,7 @@
 import groovy.json.JsonSlurper
 
 String gitUrl = "https://github.com/wildfly/quickstart.git"
+
 String[] hostnames = ["localhost"]
 
 String deployBranch = '10.x'
@@ -18,10 +19,10 @@ node {
       sh "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
     }
   for(int j=0; j<hostnames.size();j++) {
-      stage 'Deploy Stage $hostnames[j]'
+      stage 'Deploy Stage ' + hostnames[j]
         def warFiles = findFiles glob: "$buildOutput/*.war"
         for (int i=0; i<warFiles.size(); i++) {
-          deploy(warFiles[i].path,"$hostnames[j]")
+          deploy(warFiles[i].path, hostnames[j])
         }
   }    
   
