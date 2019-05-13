@@ -2,7 +2,6 @@ import groovy.json.JsonSlurper
 
 String gitUrl = "https://github.com/wildfly/quickstart.git"
 String hostname = 'localhost'
-String managementPort = '9990'
 
 String deployBranch = '10.x'
 
@@ -30,7 +29,7 @@ def deploy(deploymentFileName,hostname) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wildFlyManagementCredentials', passwordVariable: 'wildflyMgmtPassword', usernameVariable: 'wildflyMgmtUser']]) {
     
     def deploymentNameWoPath = determineFileName(deploymentFileName)
-    
+    def managementPort = '9990'
     // undeploy old war if present
     sh """curl -S -H "content-Type: application/json" -d '{"operation":"undeploy", "address":[{"deployment":"${deploymentNameWoPath}"}]}' --digest http://${env.wildflyMgmtUser}:${env.wildflyMgmtPassword}@${hostname}:${managementPort}/management"""
 
