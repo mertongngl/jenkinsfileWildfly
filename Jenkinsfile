@@ -4,7 +4,7 @@ def gitUrl = "https://github.com/wildfly/quickstart.git"
 def hostname = 'localhost'
 def managementPort = '9990'
 
-def buildOutput = "kitchensink-angularjs/target/"
+def buildOutput = "kitchensink-angularjs/target"
 
 def appDir = "kitchensink-angularjs/"
 
@@ -18,7 +18,7 @@ node {
     }
           
   stage 'Deploy Stage'
-    def warFiles = findFiles glob: buildOutput + '/*.war'
+    def warFiles = findFiles glob: '${buildOutput}/*.war'
     for (int i=0; i<warFiles.size(); i++) {
     deploy(warFiles[i].path)
     }
