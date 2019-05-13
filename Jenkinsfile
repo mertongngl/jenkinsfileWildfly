@@ -22,11 +22,11 @@ node {
   stage 'Deploy Stage'
     def warFiles = findFiles glob: "$buildOutput/*.war"
     for (int i=0; i<warFiles.size(); i++) {
-    deploy(warFiles[i].path)
+    deploy(warFiles[i].path,"$hostname")
     }
 }
 
-def deploy(deploymentFileName) {
+def deploy(deploymentFileName,hostname) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wildFlyManagementCredentials', passwordVariable: 'wildflyMgmtPassword', usernameVariable: 'wildflyMgmtUser']]) {
     
     def deploymentNameWoPath = determineFileName(deploymentFileName)
