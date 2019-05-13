@@ -10,10 +10,10 @@ def appDir = "kitchensink-angularjs/"
 
 node {
   stage 'Checkout Stage'
-    checkout([$class: 'GitSCM', branches: [[name: '10.x']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: "https://github.com/wildfly/quickstart.git"]]]) 
+    checkout([$class: 'GitSCM', branches: [[name: '10.x']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: "${gitUrl}"]]]) 
   
   stage 'Commit Stage'
-    dir($appDir) {
+    dir("${appDir}") {
       sh "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
     }
           
