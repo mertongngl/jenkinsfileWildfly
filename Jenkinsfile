@@ -1,16 +1,24 @@
 import groovy.json.JsonSlurper
 
+def gitUrl = "https://github.com/wildfly/quickstart.git"
+def hostname = 'localhost'
+def managementPort = '9990'
+
+def buildOutput = "kitchensink-angularjs/target/"
+
+def appDir = "kitchensink-angularjs/"
+
 node {
   stage 'Checkout Stage'
     checkout([$class: 'GitSCM', branches: [[name: '10.x']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: "https://github.com/wildfly/quickstart.git"]]]) 
   
   stage 'Commit Stage'
-    dir("kitchensink-angularjs/") {
+    dir(appDir) {
       sh "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven_3.3.3/bin/mvn clean install -DskipTests "
     }
           
   stage 'Deploy Stage'
-    def warFiles = findFiles glob: 'kitchensink-angularjs/target/*.war'
+    def warFiles = findFiles glob: buildOutput + '/*.war'
     for (int i=0; i<warFiles.size(); i++) {
     deploy(warFiles[i].path)
     }
@@ -18,8 +26,7 @@ node {
 
 def deploy(deploymentFileName) {
   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'wildFlyManagementCredentials', passwordVariable: 'wildflyMgmtPassword', usernameVariable: 'wildflyMgmtUser']]) {
-    def hostname = 'localhost'
-    def managementPort = '9990'
+    
     def deploymentNameWoPath = determineFileName(deploymentFileName)
     
     // undeploy old war if present
@@ -63,3 +70,4 @@ def determineFileName(path) {
   // Groovy method path.drop(idx) throws a ScriptSecurityException
   return path.substring(idx+1,path.length())
 }
+
